@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:netflix/screens/info_page.dart';
 
 
 class Home extends StatefulWidget {
@@ -41,14 +42,17 @@ class _HomeState extends State<Home> {
                   SizedBox(
                     height: 10,
                   ),
-                  Center(
-                    child: DropdownButton(items:  [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Originals',
+                        style: TextStyle(
+                          color: Colors.white
+
+                        ),
+                      ),
+                      Icon(Icons.keyboard_arrow_down,color: Colors.red,)
                     ],
-                      onChanged: null,
-                      elevation: 0,
-                      hint: Text('Originals',style: TextStyle(color: Colors.white),),
-                      iconEnabledColor: Colors.red,
-                    ),
                   ),
                   SizedBox(
                     height: 20,
@@ -120,7 +124,7 @@ class _HomeState extends State<Home> {
                   ),
                   FutureBuilder(
                       future: FirebaseFirestore.instance.
-                      collection('shows').
+                      collection('shows').orderBy('subtext').
                       get(),
                       builder:(context,AsyncSnapshot snapshot){
                         if(!snapshot.hasData){
@@ -130,38 +134,49 @@ class _HomeState extends State<Home> {
                             ),
                           );
                         }
-                        return ListView.builder(
-                            physics: const ScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: snapshot.data.docs.length,
-                            itemBuilder: (context, index){
-                              return Row(
-                                children: [
-                                  Card(
+                        return Container(
+                          height: 200,
+                          child: ListView.builder(
+                              physics: const ScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              shrinkWrap: true,
+                              itemCount: snapshot.data.docs.length,
+                              itemBuilder: (context, index){
+                                return GestureDetector(
+                                  onTap:(){
+                                    Navigator.push((context), MaterialPageRoute(builder: (context)=>InformationPage(docID: snapshot.data.docs[index].reference.id,))
+                                    );
+
+                                  },
+                                  child: Card(
                                     color: Colors.transparent,
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          height:120,
-                                          width: 140,
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(20),
-                                            image: DecorationImage(
-                                              image: NetworkImage(snapshot.data.docs[index]['image']),
-                                              fit: BoxFit.fitWidth
+                                          Container(
+                                            height:120,
+                                            width: 140,
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(20),
+                                              image: DecorationImage(
+                                                image: NetworkImage(snapshot.data.docs[index]['image']),
+                                                fit: BoxFit.fitWidth
                                             ),
                                           ),
-                                          
                                         ),
-                                        Text('asd',style: TextStyle(color: Colors.white),),
+                                        SizedBox(height: 5,),
+                                        Text(snapshot.data.docs[index]['text'],
+                                          style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
+                                        Text(snapshot.data.docs[index]['subtext'],
+                                          style: TextStyle(color: Colors.white,fontSize:14 ),),
+
                                       ],
                                     ),
-                                  )
-                                ],
-                              );
+                                  ),
+                                );
 
-                            }
+                              }
+                          ),
                         );
                       }
                   ),
